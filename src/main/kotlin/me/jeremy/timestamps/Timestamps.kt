@@ -1,7 +1,6 @@
 package me.jeremy.timestamps
 
 import java.time.Instant
-import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 /**
@@ -45,7 +44,11 @@ class Timestamps private constructor(
             fields: Map<String, Instant>,
             createdAt: Instant,
             updatedAt: Instant,
-        ) = Timestamps(HashMap(fields), createdAt, updatedAt)
+        ) = Timestamps(
+            fields = HashMap(fields),
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
 
         /**
          * An implementation of [track]'s `trackChange` parameter that only
@@ -77,22 +80,26 @@ class Timestamps private constructor(
         initialValue: T,
         timestampName: String? = null,
         trackChange: (oldValue: T, newValue: T) -> Boolean = { _, _ -> true }
-    ): ReadWriteProperty<Any?, T> {
-        return object : ReadWriteProperty<Any?, T> {
-            private var value = initialValue
+    ) = TrackedProperty(initialValue, timestampName, trackChange)
 
-            override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-                return value
-            }
+    inner class TrackedProperty<T>(
+        initialValue: T,
+        private val timestampName: String?,
+        private val trackChange: (oldValue: T, newValue: T) -> Boolean,
+    ) {
+        private var value = initialValue
 
-            override fun setValue(thisRef: Any?, property: KProperty<*>, newValue: T) {
-                if (!trackChange(value, newValue)) {
-                    return
-                }
-                value = newValue
-                updatedAt = Instant.now()
-                fields[timestampName ?: property.name] = updatedAt
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
+            return value
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, newValue: T) {
+            if (!trackChange(value, newValue)) {
+                return
             }
+            value = newValue
+            updatedAt = Instant.now()
+            fields[timestampName ?: property.name] = updatedAt
         }
     }
 }
