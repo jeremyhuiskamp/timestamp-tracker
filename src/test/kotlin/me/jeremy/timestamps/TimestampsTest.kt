@@ -49,19 +49,25 @@ class TimestampsTest {
 
         // when the field changes to something interesting
         e.field2 = SomeEnum.INTERESTING
-        // then the timestamp for the field is set
+        // then the field is changed
+        assertThat(e.field2).isEqualTo(SomeEnum.INTERESTING)
+        // and the timestamp for the field is set
         assertThat(e.whenThingsGotInteresting).isBetween(start, Instant.now())
         val whenField2FirstBecameInteresting = e.whenThingsGotInteresting
 
         // and when the field is set again but doesn't change
         e.field2 = SomeEnum.INTERESTING
-        // then the timestamp is not updated
+        // then the field is as expected
+        assertThat(e.field2).isEqualTo(SomeEnum.INTERESTING)
+        // and the timestamp is not updated
         assertThat(e.whenThingsGotInteresting).isEqualTo(whenField2FirstBecameInteresting)
         assertThat(e.timestamps.updatedAt).isEqualTo(whenField2FirstBecameInteresting)
 
         // and when the field is set to something uninteresting
         e.field2 = SomeEnum.UNINTERESTING
-        // then the timestamp is not updated
+        // then the field is changed
+        assertThat(e.field2).isEqualTo(SomeEnum.UNINTERESTING)
+        // but the timestamp is not updated
         assertThat(e.whenThingsGotInteresting).isEqualTo(whenField2FirstBecameInteresting)
 
         // but it's not clear if this is right: even though the entity didn't

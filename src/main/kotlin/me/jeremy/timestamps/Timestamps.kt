@@ -94,10 +94,11 @@ class Timestamps private constructor(
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, newValue: T) {
-            if (!trackChange(value, newValue)) {
+            val oldValue = value
+            value = newValue
+            if (!trackChange(oldValue, newValue)) {
                 return
             }
-            value = newValue
             updatedAt = Instant.now()
             fields[timestampName ?: property.name] = updatedAt
         }
